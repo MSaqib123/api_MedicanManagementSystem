@@ -1,27 +1,4 @@
-//var builder = WebApplication.CreateBuilder(args);
-
-//// Add services to the container.
-
-//builder.Services.AddControllers();
-//// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-//builder.Services.AddOpenApi();
-
-//var app = builder.Build();
-
-//// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-//    app.MapOpenApi();
-//}
-//app.UseHttpsRedirection();
-//app.UseAuthorization();
-//app.MapControllers();
-//app.Run();
-
-
-
-using Amazon.S3;
-using Amazon;
+﻿using Amazon.S3;
 using AspNetCoreRateLimit;
 using FluentValidation.AspNetCore;
 using MedicineManagementSystem.BackgroundServices;
@@ -30,25 +7,13 @@ using MedicineManagementSystem.Middlewares;
 using MedicineManagementSystem.Models;
 using MedicineManagementSystem.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -185,20 +150,16 @@ builder.Services.AddCors(options =>
 });
 
 
+builder.Services.AddSwaggerGen();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
-        foreach (var description in provider.ApiVersionDescriptions)
-        {
-            options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json", description.GroupName.ToUpperInvariant());
-        }
-    });
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -215,4 +176,257 @@ app.Run();
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+//using Amazon.S3;
+//using AspNetCoreRateLimit;
+//using FluentValidation.AspNetCore;
+//using MedicineManagementSystem.BackgroundServices;
+//using MedicineManagementSystem.Data;
+//using MedicineManagementSystem.Middlewares;
+//using MedicineManagementSystem.Models;
+//using MedicineManagementSystem.Services;
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.AspNetCore.Identity;
+//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.AspNetCore.Mvc.ApiExplorer;
+//using Microsoft.EntityFrameworkCore;
+//using Microsoft.IdentityModel.Tokens;
+//using Microsoft.OpenApi;
+//using Serilog;
+//using StackExchange.Redis;
+//using System.Reflection;
+//using System.Text;
+
+//var builder = WebApplication.CreateBuilder(args);
+
+//-------------------------------------------------
+//1.Serilog
+//------------------------------------------------ -
+//Log.Logger = new LoggerConfiguration()
+//   .WriteTo.Console()
+//   .WriteTo.File("logs/app-.txt", rollingInterval: RollingInterval.Day)
+//   .CreateLogger();
+//builder.Host.UseSerilog();
+
+//-------------------------------------------------
+//2.Controllers + FluentValidation
+//------------------------------------------------ -
+//builder.Services.AddControllers()
+//   .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Program>());
+
+//-------------------------------------------------
+//3.API Versioning
+//------------------------------------------------ -
+//builder.Services.AddApiVersioning(opt =>
+//{
+//   opt.DefaultApiVersion = new ApiVersion(1, 0);
+//   opt.AssumeDefaultVersionWhenUnspecified = true;
+//   opt.ReportApiVersions = true;
+//});
+
+//builder.Services.AddVersionedApiExplorer(opt =>
+//{
+//    opt.GroupNameFormat = "'v'VVV";
+//    opt.SubstituteApiVersionInUrl = true;
+//});
+
+//-------------------------------------------------
+//4.Swagger(Swashbuckle) – .NET 10 compatible
+// -------------------------------------------------
+//builder.Services.AddSwaggerGen(c =>
+//{
+//    c.SwaggerDoc("v1", new OpenApiInfo
+//                     {
+//                         Title = "Medicine Management API",
+//                         Version = "v1"
+//                     });
+
+//Enable file upload support
+//    c.OperationFilter<FileUploadOperationFilter>();
+
+//JWT bearer definition (unchanged)
+//    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+//                                    {
+//                                        Description = "JWT Authorization header using the Bearer scheme (Example: 'Bearer {token}')",
+//                                        Name = "Authorization",
+//                                        In = ParameterLocation.Header,
+//                                        Type = SecuritySchemeType.Http,
+//                                        Scheme = "bearer",
+//                                        BearerFormat = "JWT"
+//                                    });
+//});
+
+//-------------------------------------------------
+//5.Database + Identity
+//------------------------------------------------ -
+//builder.Services.AddDbContext<ApplicationDbContext>(opt =>
+//   opt.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//builder.Services.AddIdentity<ApplicationUser, ApplicationRole>(opt =>
+//{
+//    opt.Password.RequireDigit = true;
+//    opt.Password.RequiredLength = 8;
+//    opt.Password.RequireNonAlphanumeric = true;
+//    opt.Password.RequireUppercase = true;
+//    opt.Password.RequireLowercase = true;
+//    opt.Lockout.MaxFailedAccessAttempts = 5;
+//    opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+//    opt.User.RequireUniqueEmail = true;
+//})
+//.AddEntityFrameworkStores<ApplicationDbContext>()
+//.AddDefaultTokenProviders();
+
+//-------------------------------------------------
+//6.JWT Authentication
+//------------------------------------------------ -
+//var jwtKey = builder.Configuration["Jwt:Key"]
+//            ?? throw new InvalidOperationException("Jwt:Key missing in configuration");
+//var keyBytes = Encoding.ASCII.GetBytes(jwtKey);
+
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//    .AddJwtBearer(opt =>
+//    {
+//        opt.TokenValidationParameters = new TokenValidationParameters
+//        {
+//            ValidateIssuer = true,
+//            ValidateAudience = true,
+//            ValidateLifetime = true,
+//            ValidateIssuerSigningKey = true,
+//            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+//            ValidAudience = builder.Configuration["Jwt:Audience"],
+//            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
+//        };
+//    });
+
+//builder.Services.AddAuthorization(opt =>
+//{
+//    opt.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+//    opt.AddPolicy("Pharmacist", p => p.RequireRole("Pharmacist"));
+//    opt.AddPolicy("Accountant", p => p.RequireRole("Accountant"));
+//});
+
+//-------------------------------------------------
+//7.Redis cache
+//------------------------------------------------ -
+//builder.Services.AddStackExchangeRedisCache(opt =>
+//{
+//   opt.Configuration = builder.Configuration.GetConnectionString("Redis");
+//});
+
+//-------------------------------------------------
+//8.Rate limiting(AspNetCoreRateLimit)
+//------------------------------------------------ -
+//builder.Services.AddMemoryCache();
+//builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+//builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+//builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+//builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+//builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+
+//-------------------------------------------------
+//9.Data protection, S3, DI services, background jobs
+// -------------------------------------------------
+//builder.Services.AddDataProtection();
+//builder.Services.AddAWSService<IAmazonS3>();
+
+//builder.Services.AddScoped<ITenantService, TenantService>();
+//builder.Services.AddScoped<IBranchService, BranchService>();
+//builder.Services.AddScoped<IMedicineService, MedicineService>();
+//builder.Services.AddScoped<IInventoryService, InventoryService>();
+//builder.Services.AddScoped<ISalesService, SalesService>();
+//builder.Services.AddScoped<IPurchaseService, PurchaseService>();
+//builder.Services.AddScoped<IAnalyticsService, AnalyticsService>();
+//builder.Services.AddScoped<IUserService, UserService>();
+//builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+//builder.Services.AddScoped<INotificationService, NotificationService>();
+//builder.Services.AddScoped<IIntegrationService, IntegrationService>();
+//builder.Services.AddScoped<IBackupService, BackupService>();
+
+//builder.Services.AddHostedService<ExpiryAlertBackgroundService>();
+//builder.Services.AddHostedService<LowStockAlertBackgroundService>();
+//builder.Services.AddHostedService<DuePaymentAlertBackgroundService>();
+
+//-------------------------------------------------
+//10.CORS
+//------------------------------------------------ -
+//builder.Services.AddCors(opt =>
+//   opt.AddPolicy("AllowAll", p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+
+//-------------------------------------------------
+//BUILD APP
+//------------------------------------------------ -
+//var app = builder.Build();
+
+//-------------------------------------------------
+//11.Swagger UI – default URL = /swagger
+// -------------------------------------------------
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseDeveloperExceptionPage();
+
+//app.UseSwagger();
+//app.UseSwaggerUI(c =>
+//{
+//    one endpoint per version(v1 now, you can add more later)
+
+//    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Medicine Management API v1");
+//    c.RoutePrefix = "swagger";               // <-- open https://localhost:<port>/swagger
+//    c.DisplayOperationId();                  // nice for client generation
+//    c.DisplayRequestDuration();
+//});
+//}
+//else
+//{
+//    app.UseExceptionHandler("/error");
+//    app.UseHsts();
+//}
+
+//-------------------------------------------------
+//12.Pipeline
+//------------------------------------------------ -
+//app.UseHttpsRedirection();
+//app.UseCors("AllowAll");
+//app.UseMiddleware<ErrorHandlingMiddleware>();
+//app.UseIpRateLimiting();
+//app.UseAuthentication();
+//app.UseAuthorization();
+//app.UseMiddleware<TenantMiddleware>();
+
+//app.MapControllers();
+
+//app.Run();
+
+
+
+////var builder = WebApplication.CreateBuilder(args);
+
+////// Add services to the container.
+
+////builder.Services.AddControllers();
+////// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+////builder.Services.AddOpenApi();
+
+////var app = builder.Build();
+
+////// Configure the HTTP request pipeline.
+////if (app.Environment.IsDevelopment())
+////{
+////    app.MapOpenApi();
+////}
+////app.UseHttpsRedirection();
+////app.UseAuthorization();
+////app.MapControllers();
+////app.Run();
 

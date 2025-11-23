@@ -81,6 +81,10 @@ namespace MedicineManagementSystem.Models
         public Guid CreatedByUserId { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedByUserId { get; set; }
+
+        // ADD THESE TWO LINES:
+        public ICollection<StockTransfer> StockTransfersFrom { get; set; } = new List<StockTransfer>();
+        public ICollection<StockTransfer> StockTransfersTo { get; set; } = new List<StockTransfer>();
     }
 }
 
@@ -158,7 +162,7 @@ namespace MedicineManagementSystem.Models
         public int MinStockLevel { get; set; } = 10;
         public bool IsExpired => ExpiryDate < DateTime.UtcNow;
         public string StockHandlingMethod { get; set; } = "FIFO";
-        public ICollection<StockTransfer> Transfers { get; set; } = new List<StockTransfer>();
+        public ICollection<StockTransfer> Transfers { get; set; } = new List<StockTransfer>()!;
         public DateTime CreatedAt { get; set; }
         public Guid CreatedByUserId { get; set; }
         public DateTime? UpdatedAt { get; set; }
