@@ -175,6 +175,7 @@ namespace MedicineManagementSystem.Services
         Task<Medicine> AddMedicineAsync(Medicine medicine);
         Task<Medicine> GetMedicineByIdAsync(Guid id);
         Task<List<Medicine>> SearchMedicinesAsync(string query);
+        Task<List<Medicine>> GetAllMedicineAsync();
         Task SendExpiryAlertsAsync();
         Task UpdateMedicineAsync(Guid id, Medicine updated);
         Task DeleteMedicineAsync(Guid id);
@@ -203,10 +204,16 @@ namespace MedicineManagementSystem.Services
             return await _context.Medicines.Include(m => m.MedicineType).Include(m => m.Brand).FirstOrDefaultAsync(m => m.Id == id);
         }
 
+        public async Task<List<Medicine>> GetAllMedicineAsync()
+        {
+            return await _context.Medicines.ToListAsync();
+        }
+
         public async Task<List<Medicine>> SearchMedicinesAsync(string query)
         {
             return await _context.Medicines.Where(m => m.Name.Contains(query) || m.Composition.Contains(query)).ToListAsync();
         }
+
 
         public async Task SendExpiryAlertsAsync()
         {

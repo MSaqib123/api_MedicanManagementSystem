@@ -19,7 +19,7 @@ public class MedicineController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "Pharmacist")]
+    //[Authorize(Policy = "Pharmacist")]
     public async Task<IActionResult> AddMedicine([FromBody] Medicine medicine)
     {
         var added = await _medicineService.AddMedicineAsync(medicine);
@@ -33,6 +33,13 @@ public class MedicineController : ControllerBase
         return medicine != null ? Ok(medicine) : NotFound();
     }
 
+    [HttpGet("GetAllMedicine")]
+    public async Task<IActionResult> GetAllMedicine()
+    {
+        var results = await _medicineService.GetAllMedicineAsync();
+        return Ok(results);
+    }
+
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string query)
     {
@@ -41,7 +48,7 @@ public class MedicineController : ControllerBase
     }
 
     [HttpPost("alerts/expiry")]
-    [Authorize(Policy = "AdminOnly")]
+    //[Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> SendExpiryAlerts()
     {
         await _medicineService.SendExpiryAlertsAsync();
@@ -49,7 +56,7 @@ public class MedicineController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    [Authorize(Policy = "Pharmacist")]
+    //[Authorize(Policy = "Pharmacist")]
     public async Task<IActionResult> UpdateMedicine(Guid id, [FromBody] Medicine updated)
     {
         await _medicineService.UpdateMedicineAsync(id, updated);
@@ -57,7 +64,7 @@ public class MedicineController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    [Authorize(Policy = "AdminOnly")]
+    //[Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> DeleteMedicine(Guid id)
     {
         await _medicineService.DeleteMedicineAsync(id);

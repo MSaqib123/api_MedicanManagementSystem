@@ -1,0 +1,909 @@
+{
+  "info": {
+    "_postman_id": "medican-api-collection",
+    "name": "Medican API",
+    "description": "Collection for all Medican APIs, organized by controllers. Use variables for baseUrl (e.g., http://localhost:5000) and token (for auth). Set up an environment in Postman with these variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "MedicineController",
+      "item": [
+        {
+          "name": "POST /api/medicine",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Pharmacist policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"00000000-0000-0000-0000-000000000000\",\n  \"name\": \"Paracetamol 500mg\",\n  \"medicineTypeId\": \"11111111-1111-1111-1111-111111111111\",\n  \"medicineType\": {\n    \"id\": \"11111111-1111-1111-1111-111111111111\",\n    \"name\": \"Tablet\"\n  },\n  \"brandId\": \"22222222-2222-2222-2222-222222222222\",\n  \"brand\": {\n    \"id\": \"22222222-2222-2222-2222-222222222222\",\n    \"name\": \"Getz Pharma\"\n  },\n  \"composition\": \"Paracetamol 500mg\",\n  \"dosage\": \"1 tablet every 8 hours\",\n  \"sideEffects\": \"Nausea, dizziness\",\n  \"category\": \"Pain Relief\",\n  \"subCategory\": \"Analgesic\",\n  \"barcode\": \"8901234567890\",\n  \"createdAt\": \"2025-01-01T10:00:00Z\",\n  \"createdByUserId\": \"33333333-3333-3333-3333-333333333333\",\n  \"updatedAt\": null,\n  \"updatedByUserId\": null,\n  \"inventories\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/medicine",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicine"
+              ]
+            },
+            "description": "Add a new medicine."
+          }
+        },
+        {
+          "name": "GET /api/medicine/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicine/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicine",
+                "{{id}}"
+              ]
+            },
+            "description": "Get medicine by id."
+          }
+        },
+        {
+          "name": "GET /api/medicine/search?query={query}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicine/search?query={{query}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicine",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "query",
+                  "value": "{{query}}"
+                }
+              ]
+            },
+            "description": "Search medicines by text."
+          }
+        },
+        {
+          "name": "GET /api/medicine/getAllMedicine",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicine/getAllMedicine",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicine",
+                "getAllMedicine"
+              ]
+            },
+            "description": "get all medicines ."
+          }
+        },
+        {
+          "name": "POST /api/medicine/alerts/expiry",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/medicine/alerts/expiry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicine",
+                "alerts",
+                "expiry"
+              ]
+            },
+            "description": "Trigger send expiry alerts."
+          }
+        },
+        {
+          "name": "PUT /api/medicine/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Pharmacist policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  // Placeholder for Medicine object (adjust based on your schema)\n  \"id\": \"{{id}}\",\n  \"name\": \"string\",\n  \"description\": \"string\",\n  \"price\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/medicine/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicine",
+                "{{id}}"
+              ]
+            },
+            "description": "Update medicine."
+          }
+        },
+        {
+          "name": "DELETE /api/medicine/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/medicine/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "medicine",
+                "{{id}}"
+              ]
+            },
+            "description": "Delete medicine."
+          }
+        }
+      ]
+    },
+    {
+      "name": "SalesController",
+      "item": [
+        {
+          "name": "POST /api/sales",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Pharmacist policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  // Placeholder for Sale object (adjust based on your schema)\n  \"id\": \"00000000-0000-0000-0000-000000000000\",\n  \"items\": [],\n  \"total\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sales"
+              ]
+            },
+            "description": "Create a sale."
+          }
+        },
+        {
+          "name": "POST /api/sales/{id}/payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Pharmacist policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "\"{{paymentToken}}\""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/{{id}}/payment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sales",
+                "{{id}}",
+                "payment"
+              ]
+            },
+            "description": "Process payment for a sale."
+          }
+        },
+        {
+          "name": "POST /api/sales/{id}/prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Pharmacist policy"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/path/to/your/prescription/file"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/{{id}}/prescription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sales",
+                "{{id}}",
+                "prescription"
+              ]
+            },
+            "description": "Upload prescription for a sale. Use form-data for file upload."
+          }
+        },
+        {
+          "name": "POST /api/sales/{id}/return?refundAmount={amount}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Pharmacist policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/{{id}}/return?refundAmount={{refundAmount}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sales",
+                "{{id}}",
+                "return"
+              ],
+              "query": [
+                {
+                  "key": "refundAmount",
+                  "value": "{{refundAmount}}"
+                }
+              ]
+            },
+            "description": "Return/refund a sale."
+          }
+        },
+        {
+          "name": "GET /api/sales/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sales",
+                "{{id}}"
+              ]
+            },
+            "description": "Get sale by id."
+          }
+        },
+        {
+          "name": "DELETE /api/sales/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/sales/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "sales",
+                "{{id}}"
+              ]
+            },
+            "description": "Delete a sale."
+          }
+        }
+      ]
+    },
+    {
+      "name": "PurchaseController",
+      "item": [
+        {
+          "name": "POST /api/purchase",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Accountant policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  // Placeholder for Purchase object (adjust based on your schema)\n  \"id\": \"00000000-0000-0000-0000-000000000000\",\n  \"items\": [],\n  \"total\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/purchase",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchase"
+              ]
+            },
+            "description": "Create a purchase."
+          }
+        },
+        {
+          "name": "POST /api/purchase/alerts/due",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/purchase/alerts/due",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchase",
+                "alerts",
+                "due"
+              ]
+            },
+            "description": "Trigger send due-payment alerts."
+          }
+        },
+        {
+          "name": "GET /api/purchase/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/purchase/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchase",
+                "{{id}}"
+              ]
+            },
+            "description": "Get purchase by id."
+          }
+        },
+        {
+          "name": "PUT /api/purchase/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Accountant policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  // Placeholder for Purchase object (adjust based on your schema)\n  \"id\": \"{{id}}\",\n  \"items\": [],\n  \"total\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/purchase/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchase",
+                "{{id}}"
+              ]
+            },
+            "description": "Update purchase."
+          }
+        },
+        {
+          "name": "DELETE /api/purchase/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/purchase/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchase",
+                "{{id}}"
+              ]
+            },
+            "description": "Delete purchase."
+          }
+        }
+      ]
+    },
+    {
+      "name": "AnalyticsController",
+      "item": [
+        {
+          "name": "GET /api/analytics/daily-sales/{branchId}?date={date}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Accountant policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/daily-sales/{{branchId}}?date={{date}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "daily-sales",
+                "{{branchId}}"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "{{date}}"
+                }
+              ]
+            },
+            "description": "Daily sales report."
+          }
+        },
+        {
+          "name": "GET /api/analytics/stock-aging/{branchId}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Accountant policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/stock-aging/{{branchId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "stock-aging",
+                "{{branchId}}"
+              ]
+            },
+            "description": "Stock aging report."
+          }
+        },
+        {
+          "name": "GET /api/analytics/profit-loss/{branchId}?start={start}&end={end}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Accountant policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/profit-loss/{{branchId}}?start={{start}}&end={{end}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "profit-loss",
+                "{{branchId}}"
+              ],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "{{start}}"
+                },
+                {
+                  "key": "end",
+                  "value": "{{end}}"
+                }
+              ]
+            },
+            "description": "Profit & loss statement."
+          }
+        },
+        {
+          "name": "GET /api/analytics/dashboard/{tenantId}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Accountant policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/dashboard/{{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "dashboard",
+                "{{tenantId}}"
+              ]
+            },
+            "description": "Realtime dashboard."
+          }
+        },
+        {
+          "name": "GET /api/analytics/supplier/{supplierId}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Accountant policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/supplier/{{supplierId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "supplier",
+                "{{supplierId}}"
+              ]
+            },
+            "description": "Supplier analytics."
+          }
+        },
+        {
+          "name": "GET /api/analytics/medicine/{medicineId}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Accountant policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/analytics/medicine/{{medicineId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "analytics",
+                "medicine",
+                "{{medicineId}}"
+              ]
+            },
+            "description": "Medicine performance."
+          }
+        }
+      ]
+    },
+    {
+      "name": "SubscriptionController",
+      "item": [
+        {
+          "name": "POST /api/subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  // Placeholder for Subscription object (adjust based on your schema)\n  \"id\": \"00000000-0000-0000-0000-000000000000\",\n  \"plan\": \"string\",\n  \"status\": \"string\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscription"
+              ]
+            },
+            "description": "Create subscription."
+          }
+        },
+        {
+          "name": "GET /api/subscription/check/{tenantId}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/check/{{tenantId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscription",
+                "check",
+                "{{tenantId}}"
+              ]
+            },
+            "description": "Check subscription status for tenant."
+          }
+        },
+        {
+          "name": "GET /api/subscription/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscription",
+                "{{id}}"
+              ]
+            },
+            "description": "Get subscription by id."
+          }
+        },
+        {
+          "name": "DELETE /api/subscription/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscription/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscription",
+                "{{id}}"
+              ]
+            },
+            "description": "Cancel subscription."
+          }
+        }
+      ]
+    },
+    {
+      "name": "IntegrationController",
+      "item": [
+        {
+          "name": "GET /api/integration/track/{trackingId}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/integration/track/{{trackingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "integration",
+                "track",
+                "{{trackingId}}"
+              ]
+            },
+            "description": "Tracking/status information."
+          }
+        },
+        {
+          "name": "POST /api/integration/sync-regulatory",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/integration/sync-regulatory",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "integration",
+                "sync-regulatory"
+              ]
+            },
+            "description": "Sync with regulatory DB."
+          }
+        },
+        {
+          "name": "POST /api/integration/sync-offline",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "\"{{rawData}}\""
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/integration/sync-offline",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "integration",
+                "sync-offline"
+              ]
+            },
+            "description": "Sync offline data payload."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://localhost:7083",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your-jwt-token-here",
+      "type": "string"
+    }
+  ]
+}

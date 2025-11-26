@@ -54,7 +54,7 @@ public class UserController : ControllerBase
     public async Task<IActionResult> AddClaim(Guid id, [FromBody] ClaimModel claimModel)
     {
         var claim = new Claim(claimModel.Type, claimModel.Value);
-        if (claim != null) return BadRequest();
+        if (claim == null) return BadRequest();
         await _userService.AddClaimToUserAsync(id, claim);
         return Ok();
     }
@@ -86,23 +86,23 @@ public class UserController : ControllerBase
 
 public class RegisterModel
 {
-    public string Username { get; set; }
-    public string Email { get; set; }
-    public string Password { get; set; }
+    public string? Username { get; set; }
+    public string? Email { get; set; }
+    public string? Password { get; set; }
     public Guid TenantId { get; set; }
     public Guid? BranchId { get; set; }
-    public List<string> Roles { get; set; }
-    public List<ClaimModel> Claims { get; set; }
+    public List<string>? Roles { get; set; }
+    public List<ClaimModel>? Claims { get; set; }
 }
 
 public class LoginModel
 {
-    public string Username { get; set; }
-    public string Password { get; set; }
+    public string? Username { get; set; }
+    public string? Password { get; set; }
 }
 
 public class ClaimModel
 {
-    public string Type { get; set; }
-    public string Value { get; set; }
+    public string? Type { get; set; }
+    public string? Value { get; set; }
 }

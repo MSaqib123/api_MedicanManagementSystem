@@ -168,7 +168,7 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseIpRateLimiting();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseMiddleware<TenantMiddleware>();
+//app.UseMiddleware<TenantMiddleware>();
 app.MapControllers();
 
 app.Run();

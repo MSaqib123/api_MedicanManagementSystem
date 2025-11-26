@@ -139,6 +139,7 @@ namespace MedicineManagementSystem.Models
         public Guid CreatedByUserId { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public Guid? UpdatedByUserId { get; set; }
+
     }
 }
 

@@ -10,7 +10,7 @@ namespace MedicineManagementSystem.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>, IDataProtectionKeyContext
     {
-        public string TenantId { get; set; }
+        public string? TenantId { get; set; }
 
         public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
@@ -165,7 +165,7 @@ namespace MedicineManagementSystem.Data
         {
             if (!string.IsNullOrEmpty(TenantId))
             {
-                Database.ExecuteSqlRaw($"SET SCHEMA '{TenantId}'");
+                Database.ExecuteSqlInterpolated($"SET SCHEMA '{TenantId}'");
             }
             // Audit trail
             foreach (var entry in ChangeTracker.Entries<IAuditable>())
