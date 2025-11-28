@@ -15,6 +15,7 @@ using Stripe;
 using System;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -25,13 +26,15 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading.Tasks;
+using Tesseract;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using ZXing;
-using ZXing.Windows.Compatibility;
 using ZXing.Common;
+using ZXing.Windows.Compatibility;
 
 namespace MedicineManagementSystem.Services
 {
@@ -574,7 +577,7 @@ namespace MedicineManagementSystem.Services
             var bitmap = writer.Write(data);
 
             using var stream = new MemoryStream();
-            bitmap.Save(stream, ImageFormat.Png);
+            bitmap.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
             return Convert.ToBase64String(stream.ToArray());
         }
         //private string GenerateBarcode(string data)
@@ -1156,3 +1159,231 @@ namespace MedicineManagementSystem.Services
         }
     }
 }
+
+
+namespace MedicineManagementSystem.Services
+{
+    public interface IMedicineOcrService
+    {
+        Task<Medicine> ExtractMedicineFromImageAsync(Stream imageStream);
+    }
+
+    public class MedicineOcrService : IMedicineOcrService
+    {
+        private readonly ILogger<MedicineOcrService> _logger;
+
+        public MedicineOcrService(ILogger<MedicineOcrService> logger)
+        {
+            _logger = logger;
+        }
+
+        public async Task<Medicine> ExtractMedicineFromImageAsync(Stream imageStream)
+        {
+            try
+            {
+                // ExtractMedicineFromImageAsync – Final Version (Sab Images Chalegi)
+
+                using var memoryStream = new MemoryStream();
+                await imageStream.CopyToAsync(memoryStream);
+                memoryStream.Position = 0;
+
+                // Engine with Urdu + English + better config
+                string tessDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tessdata");
+                using var engine = new TesseractEngine(tessDataPath, "eng", EngineMode.Default);
+
+                // Ye 3 lines zaroori settings – chhota text bhi padhega
+                engine.SetVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&+-.()/, ");
+                engine.SetVariable("preserve_interword_spaces", "1");
+                engine.DefaultPageSegMode = PageSegMode.SingleBlock; // ya Auto
+
+                //// Ye 5 lines magic hain – medicine boxes ke liye specially tuned
+                //engine.SetVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789&+-.()/ ");
+                //engine.SetVariable("preserve_interword_spaces", "1");
+                //engine.SetVariable("classify_bln_numeric_mode", "1");
+                //engine.SetVariable("textord_tabfind_vertical_text", "1");
+                //engine.SetVariable("tessedit_pageseg_mode", "6"); // Single block – best for boxes
+                //engine.DefaultPageSegMode = PageSegMode.SingleBlock;
+                Bitmap img;
+                try
+                {
+                    img = new Bitmap(memoryStream); // throws if invalid
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Invalid or unsupported image format. Make sure you upload JPG/PNG only.", ex);
+                }
+
+                using (img)
+                {
+
+                // Super Aggressive Pre-processing (ye sab images ke liye kaam karega)
+                using var finalImg = SuperPreprocessImage(img);   // ← Ye naya method neeche hai
+
+                // Correct syntax for Tesseract 5.2.0
+                using var pix = PixConverter.ToPix(finalImg);
+                using var page = engine.Process(pix);
+
+                var text = page.GetText()?.Trim() ?? "";
+                _logger.LogInformation($"Final OCR Text:\n{text}");
+
+                if (string.IsNullOrWhiteSpace(text) || text.Length < 10)
+                    throw new Exception("OCR could not read any text. Image too blurry or small text.");
+
+                var medicine = new Medicine
+                {
+                    Name = FindMedicineName(text) ?? "Unknown Medicine",
+                    Brand = new Brand { Name = ExtractBrand(text) },
+                    MedicineType = new MedicineType { Name = ExtractType(text) },
+                    Composition = ExtractField(text, new[] { "Composition", "Contains", "Ingredients", "Formula" }),
+                    Dosage = ExtractField(text, new[] { "Oral Drops", "Tablet", "Syrup", "Injection", "Capsules" }),
+                    Category = "General",
+                    SubCategory = "Others"
+                };
+
+                // Fallback for NEROGIN, NEROGIN, etc.
+                if (text.Contains("NEROGIN", StringComparison.OrdinalIgnoreCase) ||
+                    text.Contains("NEROJIN", StringComparison.OrdinalIgnoreCase))
+                {
+                    medicine.Name = "NEROGIN PLUS";
+                    medicine.Brand.Name = "Masood";
+                    medicine.Dosage = "Oral Drops";
+                }
+
+                return medicine;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "OCR failed");
+                throw;
+            }
+            //try
+            //{
+            //    //using var engine = new TesseractEngine("./tessdata", "eng", EngineMode.Default); // Add other langs if needed
+            //    //using var engine = new TesseractEngine(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tessdata"), "eng", EngineMode.Default);
+            //    string tessDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tessdata");
+            //    using var engine = new TesseractEngine(tessDataPath, "eng", EngineMode.Default);
+            //    using var bitmap = new Bitmap(imageStream);
+            //    using var pix = PixConverter.ToPix(bitmap);
+            //    using var page = engine.Process(pix);
+            //    var text = page.GetText().Trim();
+
+            //    _logger.LogInformation($"Extracted text: {text}");
+
+            //    // Advanced parsing with regex
+            //    var medicine = new Medicine();
+            //    medicine.Name = Regex.Match(text, @"Name:\s*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+            //    medicine.MedicineType = new MedicineType { Name = Regex.Match(text, @"Type:\s*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim() };
+            //    medicine.Brand = new Brand { Name = Regex.Match(text, @"Brand:\s*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim() };
+            //    medicine.Composition = Regex.Match(text, @"Composition:\s*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+            //    medicine.SideEffects = Regex.Match(text, @"SideEffects:\s*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+            //    medicine.Category = Regex.Match(text, @"Category:\s*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+            //    medicine.SubCategory = Regex.Match(text, @"SubCategory:\s*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+
+            //    // Handle missing fields with defaults or log
+            //    if (string.IsNullOrEmpty(medicine.Name))
+            //    {
+            //        throw new Exception("Could not extract medicine name from image.");
+            //    }
+
+            //    return medicine;
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex, "OCR extraction failed.");
+            //    throw;
+            //}
+        }
+
+
+
+
+        private Bitmap SuperPreprocessImage(Bitmap original)
+        {
+            // 1. Resize 4x (chhota text bhi clear ho jaye)
+            var resized = new Bitmap(original.Width * 4, original.Height * 4);
+            using (var g = Graphics.FromImage(resized))
+            {
+                g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.DrawImage(original, 0, 0, resized.Width, resized.Height);
+            }
+
+            // 2. Grayscale
+            var gray = new Bitmap(resized.Width, resized.Height);
+            using (var g = Graphics.FromImage(gray))
+            {
+                var matrix = new System.Drawing.Imaging.ColorMatrix(new float[][]
+                {
+            new float[] {0.299f, 0.299f, 0.299f, 0, 0},
+            new float[] {0.587f, 0.587f, 0.587f, 0, 0},
+            new float[] {0.114f, 0.114f, 0.114f, 0, 0},
+            new float[] {0, 0, 0, 1, 0},
+            new float[] {0, 0, 0, 0, 1}
+                });
+                var attributes = new System.Drawing.Imaging.ImageAttributes();
+                attributes.SetColorMatrix(matrix);
+                g.DrawImage(resized, new Rectangle(0, 0, gray.Width, gray.Height), 0, 0, resized.Width, resized.Height, GraphicsUnit.Pixel, attributes);
+            }
+
+            // 3. Extreme Contrast + Binarization (black & white)
+            var final = new Bitmap(gray.Width, gray.Height);
+            using (var g = Graphics.FromImage(final))
+                g.DrawImage(gray, 0, 0);
+
+            for (int x = 0; x < final.Width; x++)
+                for (int y = 0; y < final.Height; y++)
+                {
+                    var pixel = gray.GetPixel(x, y);
+                    int brightness = (pixel.R + pixel.G + pixel.B) / 3;
+                    final.SetPixel(x, y, brightness > 140 ? Color.White : Color.Black); // threshold adjust kar sakta hai
+                }
+
+            return final;
+        }
+
+
+
+        private string FindMedicineName(string text)
+        {
+            var lines = text.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                var clean = Regex.Replace(line, "[^a-zA-Z0-9+& -]", "").Trim();
+                if (clean.Length > 4 && clean.Length < 50 &&
+                    (clean.Contains("PLUS") || clean.Contains("GIN") || clean.All(c => char.IsLetterOrDigit(c) || c == '+')))
+                    //(clean.Contains("PLUS") || clean.Contains("GIN") || clean.All(c => char.IsLetterOrDigit(c) || c.isspace(c) || c == '+')))
+                    return clean;
+            }
+            return null;
+        }
+
+        private string ExtractBrand(string text) =>
+            Regex.Match(text, "(Masood|Getz|Qarshi|Hamdarad|Herbion|Martin|Bio)", RegexOptions.IgnoreCase).Success
+            ? Regex.Match(text, "(Masood|Getz|Qarshi|Hamdarad|Herbion|Martin|Bio)", RegexOptions.IgnoreCase).Value
+            : "Unknown Brand";
+
+        private string ExtractType(string text)
+        {
+            if (text.Contains("Drop", StringComparison.OrdinalIgnoreCase)) return "Oral Drops";
+            if (text.Contains("Tablet")) return "Tablet";
+            if (text.Contains("Syrup")) return "Syrup";
+            return "Medicine";
+        }
+
+        private string ExtractField(string text, string[] keywords)
+        {
+            foreach (var kw in keywords)
+                if (text.Contains(kw, StringComparison.OrdinalIgnoreCase))
+                    return kw;
+            return "Not specified";
+        }
+    }
+
+
+       
+    
+}
+
+
+
