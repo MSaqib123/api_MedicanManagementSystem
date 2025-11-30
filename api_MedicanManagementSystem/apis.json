@@ -892,6 +892,51 @@
           }
         }
       ]
+    },
+    {
+      "name": "ReadMedicineByPicturesController",
+      "item": [
+        {
+          "name": "POST /api/readmedicinebypictures",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for Pharmacist policy"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "quantitiesJson",
+                  "value": "{Panadol: 100}",
+                  "type": "text",
+                  "description": "Optional JSON for quantities"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/readmedicinebypictures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "readmedicinebypictures"
+              ]
+            },
+            "description": "Process medicine pictures to create/update medicines and stock."
+          }
+        }
+      ]
     }
   ],
   "variable": [
