@@ -120,6 +120,48 @@ namespace MedicineManagementSystem.Models
 
 namespace MedicineManagementSystem.Models
 {
+    public class Category : IAuditable
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Name { get; set; }   // Skin, Digestive, Respiratory
+
+        public ICollection<SubCategory> SubCategories { get; set; }
+            = new List<SubCategory>();
+
+        public ICollection<Medicine> Medicines { get; set; }
+            = new List<Medicine>();
+
+        public DateTime CreatedAt { get; set; }
+        public Guid CreatedByUserId { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public Guid? UpdatedByUserId { get; set; }
+    }
+}
+
+namespace MedicineManagementSystem.Models
+{
+    public class SubCategory : IAuditable
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Name { get; set; }   // Eczema, Cough
+
+        public Guid CategoryId { get; set; }
+        public Category Category { get; set; }
+
+        public ICollection<Medicine> Medicines { get; set; }
+            = new List<Medicine>();
+
+        public DateTime CreatedAt { get; set; }
+        public Guid CreatedByUserId { get; set; }
+        public DateTime? UpdatedAt { get; set; }
+        public Guid? UpdatedByUserId { get; set; }
+    }
+}
+
+
+
+namespace MedicineManagementSystem.Models
+{
     public class Medicine : IAuditable
     {
         public Guid Id { get; set; } = Guid.NewGuid();
@@ -131,8 +173,15 @@ namespace MedicineManagementSystem.Models
         public string Composition { get; set; }
         public string Dosage { get; set; }
         public string SideEffects { get; set; }
-        public string Category { get; set; }
-        public string SubCategory { get; set; }
+
+        // Category
+        public Guid CategoryId { get; set; }
+        public Category Category { get; set; }
+
+        // SubCategory
+        public Guid SubCategoryId { get; set; }
+        public SubCategory SubCategory { get; set; }
+
         public ICollection<Inventory> Inventories { get; set; } = new List<Inventory>();
         public string Barcode { get; set; }
         public DateTime CreatedAt { get; set; }

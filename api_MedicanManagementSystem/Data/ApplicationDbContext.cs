@@ -29,6 +29,8 @@ namespace MedicineManagementSystem.Data
         public DbSet<ActivityLog> ActivityLogs { get; set; }
         public DbSet<SaleItem> SaleItems { get; set; }
         public DbSet<PurchaseItem> PurchaseItems { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<SubCategory> SubCategories{ get; set; }
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -72,6 +74,12 @@ namespace MedicineManagementSystem.Data
                 .WithMany(mt => mt.Medicines)
                 .HasForeignKey(m => m.MedicineTypeId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Medicine>()
+               .HasOne(m => m.SubCategory)
+               .WithMany(sc => sc.Medicines)
+               .HasForeignKey(m => m.SubCategoryId)
+               .OnDelete(DeleteBehavior.Restrict); // NO CASCADE
 
             modelBuilder.Entity<Inventory>()
                 .HasOne(i => i.Medicine)

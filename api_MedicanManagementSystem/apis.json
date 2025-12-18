@@ -937,6 +937,138 @@
           }
         }
       ]
+    },
+    {
+      "name": "BrandController",
+      "item": [
+        {
+          "name": "POST /api/brand",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n \"id\" : \"00000000-0000-0000-0000-000000000000\", \n \"name\": \"Masood\",\n }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/brand",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "brand"
+              ]
+            },
+            "description": "Create a new brand."
+          }
+        },
+        {
+          "name": "GET /api/brand",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/brand",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "brand"
+              ]
+            },
+            "description": "Get all brands."
+          }
+        },
+        {
+          "name": "GET /api/brand/{id}",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/brand/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "brand",
+                "{{id}}"
+              ]
+            },
+            "description": "Get brand by id."
+          }
+        },
+        {
+          "name": "PUT /api/brand/{id}",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n \"id\" : \"00000000-0000-0000-0000-000000000000\", \n \"name\": \"Masood\",\n }"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/brand/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "brand",
+                "{{id}}"
+              ]
+            },
+            "description": "Update brand."
+          }
+        },
+        {
+          "name": "DELETE /api/brand/{id}",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "description": "Required for AdminOnly policy"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/brand/{{id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "brand",
+                "{{id}}"
+              ]
+            },
+            "description": "Delete brand."
+          }
+        }
+      ]
     }
   ],
   "variable": [

@@ -1216,40 +1216,38 @@ namespace MedicineManagementSystem.Services
                 using (img)
                 {
 
-                // Super Aggressive Pre-processing (ye sab images ke liye kaam karega)
-                using var finalImg = SuperPreprocessImage(img);   // ← Ye naya method neeche hai
+                    // Super Aggressive Pre-processing (ye sab images ke liye kaam karega)
+                    using var finalImg = SuperPreprocessImage(img);   // ← Ye naya method neeche hai
 
-                // Correct syntax for Tesseract 5.2.0
-                using var pix = PixConverter.ToPix(finalImg);
-                using var page = engine.Process(pix);
+                    // Correct syntax for Tesseract 5.2.0
+                    using var pix = PixConverter.ToPix(finalImg);
+                    using var page = engine.Process(pix);
 
-                var text = page.GetText()?.Trim() ?? "";
-                _logger.LogInformation($"Final OCR Text:\n{text}");
+                    var text = page.GetText()?.Trim() ?? "";
+                    _logger.LogInformation($"Final OCR Text:\n{text}");
 
-                if (string.IsNullOrWhiteSpace(text) || text.Length < 10)
-                    throw new Exception("OCR could not read any text. Image too blurry or small text.");
+                    if (string.IsNullOrWhiteSpace(text) || text.Length < 10)
+                        throw new Exception("OCR could not read any text. Image too blurry or small text.");
 
-                var medicine = new Medicine
-                {
-                    Name = FindMedicineName(text) ?? "Unknown Medicine",
-                    Brand = new Brand { Name = ExtractBrand(text) },
-                    MedicineType = new MedicineType { Name = ExtractType(text) },
-                    Composition = ExtractField(text, new[] { "Composition", "Contains", "Ingredients", "Formula" }),
-                    Dosage = ExtractField(text, new[] { "Oral Drops", "Tablet", "Syrup", "Injection", "Capsules" }),
-                    Category = "General",
-                    SubCategory = "Others"
-                };
+                    var medicine = new Medicine
+                    {
+                        Name = FindMedicineName(text) ?? "Unknown Medicine",
+                        Brand = new Brand { Name = ExtractBrand(text) },
+                        MedicineType = new MedicineType { Name = ExtractType(text) },
+                        Composition = ExtractField(text, new[] { "Composition", "Contains", "Ingredients", "Formula" }),
+                        Dosage = ExtractField(text, new[] { "Oral Drops", "Tablet", "Syrup", "Injection", "Capsules" }),
+                    };
 
-                // Fallback for NEROGIN, NEROGIN, etc.
-                if (text.Contains("NEROGIN", StringComparison.OrdinalIgnoreCase) ||
-                    text.Contains("NEROJIN", StringComparison.OrdinalIgnoreCase))
-                {
-                    medicine.Name = "NEROGIN PLUS";
-                    medicine.Brand.Name = "Masood";
-                    medicine.Dosage = "Oral Drops";
-                }
+                    // Fallback for NEROGIN, NEROGIN, etc.
+                    if (text.Contains("NEROGIN", StringComparison.OrdinalIgnoreCase) ||
+                        text.Contains("NEROJIN", StringComparison.OrdinalIgnoreCase))
+                    {
+                        medicine.Name = "NEROGIN PLUS";
+                        medicine.Brand.Name = "Masood";
+                        medicine.Dosage = "Oral Drops";
+                    }
 
-                return medicine;
+                    return medicine;
                 }
 
             }
@@ -1381,9 +1379,304 @@ namespace MedicineManagementSystem.Services
     }
 
 
-       
-    
+
+
 }
 
 
+namespace MedicineManagementSystem.Services
+{
+    public interface IBrandService
+    {
+        Task<Brand> CreateBrandAsync(Brand brand);
+        Task<List<Brand>> GetAllBrandsAsync();
+        Task<Brand> GetBrandByIdAsync(Guid id);
+        Task<Brand> UpdateBrandAsync(Guid id, Brand updatedBrand);
+        Task DeleteBrandAsync(Guid id);
+    }
+
+    public class BrandService : IBrandService
+    {
+        private readonly ApplicationDbContext _context;
+
+        public BrandService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<Brand> CreateBrandAsync(Brand brand)
+        {
+            brand.CreatedAt = DateTime.UtcNow;
+            // Assuming CreatedByUserId set externally (e.g., from HttpContext)
+            _context.Brands.Add(brand);
+            await _context.SaveChangesAsync();
+            return brand;
+        }
+
+        public async Task<List<Brand>> GetAllBrandsAsync()
+        {
+            //return await _context.Brands
+            //.Select(b => new Brand
+            //{
+            //    Id = b.Id,
+            //    Name = b.Name, // Map other properties
+            //    Medicines = b.Medicines.Select(m => new Medicine
+            //    {
+            //        Id = m.Id,
+            //        Name = m.Name // Map other properties
+            //    }).ToList()
+            //})
+            //.ToListAsync();
+            return await _context.Brands.Include(b => b.Medicines).ToListAsync();
+        }
+
+        public async Task<Brand> GetBrandByIdAsync(Guid id)
+        {
+            return await _context.Brands.Include(b => b.Medicines).FirstOrDefaultAsync(b => b.Id == id);
+        }
+
+        public async Task<Brand> UpdateBrandAsync(Guid id, Brand updatedBrand)
+        {
+            var brand = await _context.Brands.FindAsync(id);
+            if (brand == null)
+                throw new KeyNotFoundException("Brand not found");
+
+            brand.Name = updatedBrand.Name;
+            brand.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            return brand; // ✅ return updated entity
+        }
+
+        public async Task DeleteBrandAsync(Guid id)
+        {
+            var brand = await _context.Brands.FindAsync(id);
+            if (brand == null) throw new KeyNotFoundException("Brand not found");
+
+            _context.Brands.Remove(brand);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
+
+
+namespace MedicineManagementSystem.Services
+{
+    public interface ICategoryService
+    {
+        Task<Category> CreateCategoryAsync(Category category);
+        Task<IEnumerable<Category>> GetAllCategoriesAsync();
+        Task<Category?> GetCategoryByIdAsync(Guid id);
+        Task<Category> UpdateCategoryAsync(Guid id, Category category);
+        Task DeleteCategoryAsync(Guid id);
+    }
+}
+
+
+namespace MedicineManagementSystem.Services
+{
+    public class CategoryService : ICategoryService
+    {
+        private readonly ApplicationDbContext _context;
+
+        public CategoryService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<Category> CreateCategoryAsync(Category category)
+        {
+            _context.Categories.Add(category);
+            await _context.SaveChangesAsync();
+            return category;
+        }
+
+        public async Task<IEnumerable<Category>> GetAllCategoriesAsync()
+        {
+            return await _context.Categories
+                .Include(c => c.SubCategories)
+                .ToListAsync();
+        }
+
+        public async Task<Category?> GetCategoryByIdAsync(Guid id)
+        {
+            return await _context.Categories
+                .Include(c => c.SubCategories)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        public async Task<Category> UpdateCategoryAsync(Guid id, Category category)
+        {
+            var existing = await _context.Categories.FindAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException("Category not found");
+
+            existing.Name = category.Name;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return existing;
+        }
+
+        public async Task DeleteCategoryAsync(Guid id)
+        {
+            var category = await _context.Categories.FindAsync(id);
+            if (category == null)
+                throw new KeyNotFoundException("Category not found");
+
+            _context.Categories.Remove(category);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
+
+
+namespace MedicineManagementSystem.Services
+{
+    public interface ISubCategoryService
+    {
+        Task<SubCategory> CreateSubCategoryAsync(SubCategory subCategory);
+        Task<IEnumerable<SubCategory>> GetAllSubCategoriesAsync();
+        Task<SubCategory?> GetSubCategoryByIdAsync(Guid id);
+        Task<IEnumerable<SubCategory>> GetSubCategoriesByCategoryAsync(Guid categoryId);
+        Task<SubCategory> UpdateSubCategoryAsync(Guid id, SubCategory subCategory);
+        Task DeleteSubCategoryAsync(Guid id);
+    }
+}
+
+namespace MedicineManagementSystem.Services
+{
+    public class SubCategoryService : ISubCategoryService
+    {
+        private readonly ApplicationDbContext _context;
+
+        public SubCategoryService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<SubCategory> CreateSubCategoryAsync(SubCategory subCategory)
+        {
+            _context.SubCategories.Add(subCategory);
+            await _context.SaveChangesAsync();
+            return subCategory;
+        }
+
+        public async Task<IEnumerable<SubCategory>> GetAllSubCategoriesAsync()
+        {
+            return await _context.SubCategories
+                .Include(sc => sc.Category)
+                .ToListAsync();
+        }
+
+        public async Task<SubCategory?> GetSubCategoryByIdAsync(Guid id)
+        {
+            return await _context.SubCategories
+                .Include(sc => sc.Category)
+                .FirstOrDefaultAsync(sc => sc.Id == id);
+        }
+
+        public async Task<IEnumerable<SubCategory>> GetSubCategoriesByCategoryAsync(Guid categoryId)
+        {
+            return await _context.SubCategories
+                .Where(sc => sc.CategoryId == categoryId)
+                .ToListAsync();
+        }
+
+        public async Task<SubCategory> UpdateSubCategoryAsync(Guid id, SubCategory subCategory)
+        {
+            var existing = await _context.SubCategories.FindAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException("SubCategory not found");
+
+            existing.Name = subCategory.Name;
+            existing.CategoryId = subCategory.CategoryId;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return existing;
+        }
+
+        public async Task DeleteSubCategoryAsync(Guid id)
+        {
+            var subCategory = await _context.SubCategories.FindAsync(id);
+            if (subCategory == null)
+                throw new KeyNotFoundException("SubCategory not found");
+
+            _context.SubCategories.Remove(subCategory);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
+
+
+namespace MedicineManagementSystem.Services
+{
+    public interface IMedicineTypeService
+    {
+        Task<MedicineType> CreateMedicineTypeAsync(MedicineType medicineType);
+        Task<IEnumerable<MedicineType>> GetAllMedicineTypesAsync();
+        Task<MedicineType?> GetMedicineTypeByIdAsync(Guid id);
+        Task<MedicineType> UpdateMedicineTypeAsync(Guid id, MedicineType medicineType);
+        Task DeleteMedicineTypeAsync(Guid id);
+    }
+}
+
+
+namespace MedicineManagementSystem.Services
+{
+    public class MedicineTypeService : IMedicineTypeService
+    {
+        private readonly ApplicationDbContext _context;
+
+        public MedicineTypeService(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<MedicineType> CreateMedicineTypeAsync(MedicineType medicineType)
+        {
+            _context.MedicineTypes.Add(medicineType);
+            await _context.SaveChangesAsync();
+            return medicineType;
+        }
+
+        public async Task<IEnumerable<MedicineType>> GetAllMedicineTypesAsync()
+        {
+            return await _context.MedicineTypes
+                .OrderBy(mt => mt.Name)
+                .ToListAsync();
+        }
+
+        public async Task<MedicineType?> GetMedicineTypeByIdAsync(Guid id)
+        {
+            return await _context.MedicineTypes
+                .FirstOrDefaultAsync(mt => mt.Id == id);
+        }
+
+        public async Task<MedicineType> UpdateMedicineTypeAsync(Guid id, MedicineType medicineType)
+        {
+            var existing = await _context.MedicineTypes.FindAsync(id);
+            if (existing == null)
+                throw new KeyNotFoundException("MedicineType not found");
+
+            existing.Name = medicineType.Name;
+            existing.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return existing;
+        }
+
+        public async Task DeleteMedicineTypeAsync(Guid id)
+        {
+            var type = await _context.MedicineTypes.FindAsync(id);
+            if (type == null)
+                throw new KeyNotFoundException("MedicineType not found");
+
+            _context.MedicineTypes.Remove(type);
+            await _context.SaveChangesAsync();
+        }
+    }
+}
 
